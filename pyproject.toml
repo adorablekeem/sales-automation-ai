@@ -16,6 +16,7 @@ dependencies = [
     "tavily-python>=0.5.0",
     "langchain-openai>=0.3.1",
     "langchain_anthropic>=0.3.0",
+    "youtube-transcript-api>=0.6.0"
 ]
 
 [project.optional-dependencies]

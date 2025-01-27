@@ -24,6 +24,8 @@ Your query should:
 3. Do not hallucinate search terms that will make you miss the persons profile entirely
 4. Use ONLY the full name extracted from the email. If the input email is "alessio.cuoci@scalapay.com", an example query would be "Alessio Cuoci Scalapay Interviews" or "Alessio Cuoci Scalapay Articles"
 9. Use always interviews and articles
+10. Use instagram
+11. Never use information related to the LinkedIn profile
 
 Create a focused query that will maximize the chances of finding information about the person.
 Remember we are interested in determining the person's interests and hobbies mainly."""
@@ -54,6 +56,13 @@ Please provide detailed research notes that:
 The 'References' section should ALWAYS include the sources you used to gather information, and the related urls. DO NOT MAKE UP ANY RESOURCE USED. IF YOU DIDN'T USE THAT SPECIFIC URL, DO NOT REPORT IT.
 Remember: Don't try to format the output to match the schema - just take clear notes that capture all relevant information."""
 
+YT_PROMPT = """You are doing reports on youtube video transcripts.
+    Do a profile report on the youtube video transcript of the person {person}, based on the trascripts {content}.
+"""
+
+FINAL_PROMPT = """You are an expert analyst tasked with writing a comprehensive digital dossier of {person} based on the gathered information.
+            Use the provided documents to write your comprehensive final dossier. Use this source to write your section: {reports}
+"""
 
 REFLECTION_PROMPT = """You are a research analyst tasked with reviewing the quality and completeness of extracted person information.
 

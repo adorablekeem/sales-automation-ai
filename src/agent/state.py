@@ -87,7 +87,7 @@ class OverallState:
     completed_notes: Annotated[list, operator.add] = field(default_factory=list)
     "Notes from completed research related to the schema"
     
-    reports: list[str] = field(default_factory=list)
+    reports: Annotated[list, operator.add]
 
     info: dict[str, Any] = field(default=None)
     """

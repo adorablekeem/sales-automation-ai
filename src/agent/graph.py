@@ -1,9 +1,15 @@
+import sys
+import os
+
 import asyncio
 from typing import cast, Any, Literal
 import json
 
-
-
+from tools.tools import get_transcript
+from tools.tools import extract_youtube_id
+from tools.tools import get_youtube_interview_urls
+from tools.proxycurl.linkedin import scrape_linkedin_profile
+from linkedin_lookup_agent import lookup as linkedin_lookup_agent
 from langchain_openai import ChatOpenAI
 from typing_extensions import TypedDict
 from tavily import AsyncTavilyClient
@@ -19,7 +25,9 @@ from agent.prompts import (
     EXTRACTION_PROMPT,
     REFLECTION_PROMPT,
     INFO_PROMPT,
+    YT_PROMPT,
     QUERY_WRITER_PROMPT,
+    FINAL_PROMPT
 )
 
 # LLMs
@@ -30,7 +38,7 @@ class ResearchGraphState(TypedDict):
     final_report: str # Final report
     reports: list # Reports
 
-    def generate_queries(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
+    async def generate_queries(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
         """Generate search queries based on the user input and extraction schema."""
         # Get configuration
         configurable = Configuration.from_runnable_config(config)
@@ -127,26 +135,58 @@ class ResearchGraphState(TypedDict):
         return {"reports": [result.content]}
 
 
-    async def linkedin_search_node(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
+    async def linkedin_search(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
         """Search LinkedIn for the person's profile and extract relevant information."""
-        # Get configuration
-        configurable = Configuration.from_runnable_config(config)
 
-        # Search LinkedIn
-        linkedin_query = f"site:linkedin.com {state.person['email']}"
-        linkedin_search_results = await tavily_async_client.search(
-            linkedin_query,
-            days=360,
-            max_results=1,
-            include_raw_content=True,
-            topic="general",
+        linkedin_profile_url = linkedin_lookup_agent(state.person['name'])
+
+        # Scrape the LinkedIn profile data
+        linkedin_data = str(scrape_linkedin_profile(linkedin_profile_url))
+        system_message = (
+            "parse all this information and write a comprehensive report on the person's LinkedIn profile."
         )
-
+        messages = [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": f"Use this source to write your section: {linkedin_data}"},
+        ]
         # Extract LinkedIn content
-        linkedin_content = linkedin_search_results
-        return {"linkedin_content": linkedin_content}
+        linkedin_content = await openai4o.ainvoke(messages)
 
-    @staticmethod
+    
+        return {"reports": [linkedin_content]}
+    
+    async def youtube_interviews(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
+        """Execute a multi-step web search and information extraction process.
+
+        This function performs the following steps:
+        1. Executes concurrent web searches using the Tavily API
+        2. Deduplicates and formats the search results
+        """
+
+        # Web search
+        youtube_url = get_youtube_interview_urls(state.person['name'], max_results=3)
+        video_ids = [extract_youtube_id(url) for url in youtube_url]
+
+        video_transcripts = await asyncio.gather(
+        *[get_transcript(video_id, languages=["it", "en"]) for video_id in video_ids]
+        )
+                
+        # Filter out None or exceptions
+        video_transcripts = [transcript for transcript in video_transcripts if transcript]
+        if not video_transcripts:
+            print("No valid transcripts found!")  # Debug
+            return {"reports": []}
+        
+        source_str = str(video_transcripts)
+        # Generate structured notes relevant to the extraction schema
+        p = YT_PROMPT.format(
+            person=state.person,
+            info=json.dumps(state.extraction_schema, indent=2),
+            content=source_str,
+        )
+        interviews = await openai4o.ainvoke(p)
+        return {"reports": [interviews.content]}
+
     async def finalize_report(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
         """Node to write a section."""
         
@@ -161,17 +201,15 @@ class ResearchGraphState(TypedDict):
             raise ValueError("Reports are missing or not populated in the state.")
 
         # Write section using the gathered source docs from the interview
-        system_message = (
-            "You are an expert analyst tasked with writing a comprehensive digital dossier of a specific person based on the gathered information. "
-            "Use the provided documents to write your comprehensive final dossier." 
+
+        l = FINAL_PROMPT.format(
+            person=state.person,
+            info=json.dumps(state.extraction_schema, indent=2),
+            reports=reports,
         )
-        messages = [
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": f"Use this source to write your section: {reports}"},
-        ]
 
         # Invoke the model
-        final_report = await openai4o.ainvoke(messages)
+        final_report = await openai4o.ainvoke(l)
 
         # Access the content of the response
         return {"final_report": final_report.content}
@@ -279,15 +317,16 @@ class ReflectionOutput(BaseModel):
 builder.add_node("collect_person_info", ResearchGraphState.collect_person_info)
 builder.add_node("generate_queries", ResearchGraphState.generate_queries)
 builder.add_node("research_person", ResearchGraphState.research_person)
-## builder.add_node("linkedin_search", linkedin_search)
+builder.add_node("linkedin_search", ResearchGraphState.linkedin_search)
 builder.add_node("finalize_report", ResearchGraphState.finalize_report)
+builder.add_node("youtube_interviews", ResearchGraphState.youtube_interviews)
 
 builder.add_edge(START, "collect_person_info")
 builder.add_edge("collect_person_info", "generate_queries")
-## builder.add_edge(START, "linkedin_search")
+builder.add_edge("collect_person_info", "linkedin_search")
+builder.add_edge("collect_person_info", "youtube_interviews")
 builder.add_edge("generate_queries", "research_person")
-builder.add_edge("research_person", "finalize_report")
-## builder.add_edge("linkedin_search", "finalize_report")
+builder.add_edge(["research_person", "linkedin_search", "youtube_interviews"], "finalize_report")
 builder.add_edge("finalize_report", END)
 
 # Compile
