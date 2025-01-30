@@ -71,3 +71,12 @@ People {idx}:
 Notes from research:
 {people_notes}"""
     return formatted_str
+
+def get_report(reports, report_name: str):
+    """
+    Retrieves the content of a report by its title.
+    """
+    for report in reports:
+        if report.title == report_name:
+            return report.content
+    return ""

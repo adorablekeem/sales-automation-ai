@@ -88,6 +88,8 @@ class OverallState:
     "Notes from completed research related to the schema"
     
     reports: Annotated[list, operator.add]
+    final_report: str = field(default=None)
+    company_reports: Annotated[list, operator.add]
 
     info: dict[str, Any] = field(default=None)
     """
