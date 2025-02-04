@@ -133,6 +133,9 @@ venv.bak/
 # Json service account
 client_secret.json
 
+# token json
+token.json
+
 # Spyder project settings
 .spyderproject
 .spyproject
