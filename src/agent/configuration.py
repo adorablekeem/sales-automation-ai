@@ -3,14 +3,14 @@ from dataclasses import dataclass, fields
 from typing import Any, Optional
 
 from langchain_core.runnables import RunnableConfig
-
+from tools.google_docs_tools import GoogleDocsManager
 
 @dataclass(kw_only=True)
 class Configuration:
     """The configurable fields for the chatbot."""
 
-    max_search_queries: int = 5  # Max search queries per person
-    max_search_results: int = 5  # Max search results per query
+    max_search_queries: int = 3  # Max search queries per person
+    max_search_results: int = 3  # Max search results per query
     max_reflection_steps: int = 0  # Max reflection steps
 
     @classmethod
@@ -27,3 +27,5 @@ class Configuration:
             if f.init
         }
         return cls(**{k: v for k, v in values.items() if v})
+
+    docs_manager = GoogleDocsManager()

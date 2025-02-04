@@ -1,12 +1,20 @@
 import argparse
 from typing import Optional
 
-from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langsmith import Client, evaluate
 from langsmith.evaluation import EvaluationResults
 from pydantic import BaseModel, Field
 
 from langgraph.pregel.remote import RemoteGraph
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # This loads variables from .env into the environment
+
+# Access your variables
+api_key = os.getenv('LANGSMITH_API_KEY')
 
 # Defaults
 EXPERIMENT_PREFIX = "People mAIstro "
@@ -50,7 +58,11 @@ extraction_schema = {
 }
 
 
-judge_llm = ChatAnthropic(model="claude-3-5-sonnet-latest", temperature=0)
+judge_llm = ChatOpenAI(model="gpt-4o",
+    temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,)
 
 EVALUATION_PROMPT = f"""You are an evaluator tasked with assessing the accuracy of an agent's output compared to the expected output. Follow these instructions:
 

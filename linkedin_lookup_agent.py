@@ -1,4 +1,4 @@
-from tools.tools import get_profile_url
+from tools.my_tools import get_profile_url
 
 from langchain import PromptTemplate
 from langchain.chat_models import ChatOpenAI
@@ -30,7 +30,7 @@ Action Input: "Nicola Olivetto LinkedIn profile Scalapay"
 Observation: https://www.linkedin.com/posts/nicola-olivetto-73968692_scalapay-buys-an-italian-payment-institute-activity-7038422608941359104-5mPT
 Thought:It appears that the search is consistently returning a LinkedIn post URL rather than the profile page. This might indicate that the profile page is not easily accessible or indexed. However, based on the pattern of LinkedIn URLs, I can deduce the likely profile URL from the post URL.
 
-Final Answer: https://www.linkedin.com/in/nicola-olivetto-73968692/recent-activity/reactions/'
+Final Answer: https://www.linkedin.com/in/nicola-olivetto-73968692/'
             
                       
                       """

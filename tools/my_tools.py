@@ -5,7 +5,7 @@ from urllib.parse import urlparse, parse_qs
 from typing import List, Optional
 import asyncio
 
-tavily_client = TavilyClient(api_key="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")
+tavily_client = TavilyClient(api_key="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")
 
 class CustomSerpAPIWrapper(SerpAPIWrapper):
     def __init__(self):
@@ -45,13 +45,13 @@ class CustomSerpAPIWrapper(SerpAPIWrapper):
 def get_profile_url(name: str) -> str:
     """Searches for an individual's LinkedIn profile URL using Tavily."""
     query = f"{name} LinkedIn"
-    response = tavily_client.search(query=query, max_results=5)
+    response = tavily_client.search(query=query, max_results=3)
     if response and response['results']:
         return response['results'][0]['url']
     else:
         return "LinkedIn profile not found."
     
-def get_youtube_interview_urls(name: str, max_results: int = 10) -> List[str]:
+def get_youtube_interview_urls(name: str, max_results: int = 3) -> List[str]:
     """
     Search for multiple YouTube interview URLs related to a given person's name.
     Returns a list of unique YouTube URLs. If none found, returns an empty list.

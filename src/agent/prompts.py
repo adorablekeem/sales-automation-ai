@@ -30,20 +30,19 @@ Your query should:
 Create a focused query that will maximize the chances of finding information about the person.
 Remember we are interested in determining the person's interests and hobbies mainly."""
 
-COMPANY_QUERY_WRITER_PROMPT = """You are a search query generator tasked with creating targeted search queries to gather specific information about a company.
+COMPANY_QUERY_WRITER_PROMPT = """You are a financial analyst tasked with creating targeted search queries to gather specific financial information about a company relevant to the year {current_year}.
 
 Here is the company you are researching: {company}
 
-Generate at most {max_search_queries} search queries.
+Generate at most 10 search queries.
 
 
 Your query should:
 1. Make sure to look up the right company
 2. Use financial statements, income statements, balance sheets, cash flow statements, and annual reports
-3. Do not hallucinate search terms that will make you miss the persons profile entirely
+3. Do not hallucinate search terms that will make you miss the company financial information entirely
 
-Create a focused query that will maximize the chances of finding information about the company.
-Remember we are interested in determining the company's painpoints and how our solution, BNPL Solution, can solve this."""
+Remember we are interested in determining the company's painpoints and how our BNPL Solution, can solve this."""
 
 INFO_PROMPT = """You are doing web research on people, {people}.
 
@@ -80,22 +79,13 @@ Remember: Don't try to format the output to match the schema - just take clear n
 COMPANY_INFO_PROMPT = """You are doing web research on a company, {company}.
 # **Role:**
 
-You are a Professional Business Analyst tasked with crafting a comprehensive report based on the LinkedIn profiles of both an individual and their company and the content of their website. 
-Your goal is to provide an in-depth overview of the lead's professional background, the company's mission and activities, and identify key business insights that might inform potential opportunities or partnerships.
+You are a Professional Business Analyst tasked with crafting a comprehensive report based on financial information of the company and the content of its website. 
+Your goal is to provide an in-depth overview of the company's financial information, along with company's profile, and MOST IMPORTANTLY identify key business insights that might inform future Goals, Opportunities and Painpoints
 
 ---
 
 # **Task:**
 
-Craft a detailed business profile report that includes insights about the individual lead and their associated company based on the provided LinkedIn and website information.
-This report should include the following:
-
-## **Company Overview:**
-* **Name & Description:** Provide a brief description of the company, its mission, and its core business activities.
-* **Website & Location:** Include the company's website URL and its headquarters' location(s).
-* **Industry & Size:** Report the company’s industry and employee size.
-* **Mission:** Summarize the company’s mission and primary offerings.  
-* **Product and services:** Highlight areas where the company excels and its offered product and services.  
 
 You have just scraped website content.
 
@@ -119,6 +109,180 @@ YT_PROMPT = """You are doing reports on youtube video transcripts.
 FINAL_PROMPT = """You are an expert analyst tasked with writing a comprehensive digital dossier of {person} based on the gathered information.
             Use the provided documents to write your comprehensive final dossier. Use this source to write your section: {reports}
 """
+
+GENERATE_OUTREACH_REPORT_PROMPT = """
+# **Role:**  
+You are a **Professional Marketing Analyst** specializing in AI-driven content strategies, customer engagement, and operational optimization. Your task is to write a comprehensive, personalized outreach report that we will send to the lead's company demonstrating what challenges we identified in their marketing strategy and how our AI-powered solutions can help them address it and drive measurable improvements.  
+
+---
+
+# **Task:**  
+Using the provided research {company_report} about the lead's company and the accompanying case study, generate a detailed outreach report that highlights:  
+1. The lead's company challenges and opportunities.  
+2. How our AI-driven solutions can help them solve their challenges.  
+3. Showcase the tangible results that we achieved with similar businesses through our solutions.  
+
+---
+
+# **Context:**  
+You have access to:  
+1. A **detailed research report** about the lead’s company, including their services, challenges, and digital presence.  
+2. A **relevant case study** showcasing the success of our AI-driven solutions in similar contexts.  
+
+## **About Us:**  
+
+**Scalapay’s** mission is very simple: to provide a seamless and unique shopping experience, from the first interaction to the final payment. With Scalapay’s payment solution, allowing customers to pay in 3 interest-free installments, merchants can offer a unique service to their customers, increasing both conversion rates and the average basket value.
+
+Our Ambition
+
+Scalapay makes installment payments easier and enhances the consumer’s shopping experience. With Scalapay, customers can pay both online and in-store in just three simple monthly installments.
+
+And the best part? Scalapay does not charge any fees or interest to consumers and completely eliminates tedious credit checks. This makes shopping more enjoyable—not only for customers but also for merchants. Businesses receive full payment on the same day and benefit from increased customer loyalty.
+
+This positive shopping experience directly impacts conversion rates and sales. The observed increase of 20% to 48% in the total average basket value speaks for itself. Using Scalapay not only guarantees higher sales but also serves as an effective tool for customer retention.
+
+Our Impact
+
+More than 6.5 million clients trust us
+20% to 48% increase in the average basket value for e-commerce sites
+Up to 200% increase in the average basket value for physical stores
+More than 8,000 partner stores
+---
+
+# **Instructions:**  
+Your report should include the following five sections:  
+   
+**1. Introduction:**
+- Information about who we are and our services and offerings.
+
+**2. Business Analysis:**  
+- **Company Overview:** Summarize the lead’s business, industry, and key offerings.  
+- **Challenges Identified:** Highlight their key challenges based on the research report.  
+- **Potential for Improvement:** Identify areas where AI-driven solutions can drive measurable results.  
+
+**3. Relevant BNPL Solutions:**  
+- **PAY IN 3 INSTALLMENTS:** Maximize conversion with payment in 3 installments.
+  - You receive the full amount immediately.
+  - The customer pays in 3 interest-free installments.
+  - Encourages frequent and higher-value purchases.
+
+- **PAY IN 4 INSTALLMENTS (Standard/Dynamic/Combined):** Increase installment options to maximize conversions for larger carts.
+  - You receive the full amount immediately.
+  - Extra installment options encourage high-value purchases.
+  - The customer pays in 3 or 4 interest-free installments.
+
+- **PAY-BY-LINK:** Optimize conversions by offering a payment link with installment options.
+  - You receive the full amount immediately.
+  - The customer pays in 3 or 4 installments.
+  - Encourages frequent and larger purchases.
+
+**4. Expected Results:**  
+- **48% Increase in average cart size**  
+- **11% Increase in conversions**  
+
+**5. Call to Action:**  
+- Suggest actionable next steps, such as scheduling a meeting to explore tailored BNPL solutions further.  
+
+---
+
+# **Example Output:**
+
+# **Elevating GreenFuture Tech’s Digital Strategy with AI**  
+---
+
+## **Introduction**  
+At **ElevateAI Marketing Solutions**, we empower businesses to thrive in the digital age with AI-driven strategies tailored to their needs. From automating social media content and creating SEO-optimized blogs to boosting customer engagement with AI-powered agents, our solutions are designed to save time, maintain consistency, and deliver measurable results.  
+
+Our personalized approach and cutting-edge technology have enabled us to help companies like yours transform their digital presence into streamlined, lead-generating powerhouses. With proven expertise in enhancing marketing strategies across industries, we’re excited about the opportunity to partner with **GreenFuture Tech** to achieve measurable growth.  
+
+---
+
+## **Business Analysis**  
+
+### **Company Overview:**  
+GreenFuture Tech is a sustainable technology company specializing in renewable energy solutions, such as solar panel systems, energy storage devices, and smart home integrations. With a mission to reduce carbon footprints and promote sustainable living, GreenFuture Tech has positioned itself as a pioneer in the renewable energy industry.  
+
+### **Challenges Identified:**  
+- **Limited Digital Presence:** GreenFuture Tech's website has strong branding but lacks consistent blog updates and SEO-optimized content to attract organic traffic.  
+- **Low Social Media Engagement:** While active on social media, posts often lack targeted strategies, resulting in limited reach and engagement.  
+- **Customer Support Bottlenecks:** Increasing customer inquiries are straining support teams, leading to delayed responses.  
+
+### **Potential for Improvement:**  
+- Establishing GreenFuture Tech as an industry thought leader through consistent, high-quality content.  
+- Driving audience engagement with strategic, AI-powered social media automation.  
+- Enhancing customer satisfaction with AI chatbots for real-time support.  
+
+---
+
+### Proposed AI Solutions  
+
+**1. AI-Powered Content Creation & SEO Optimization**  
+- **Approach:** Leverage AI to generate in-depth articles on renewable energy trends and implement SEO optimization to improve organic search visibility.  
+- **Benefit:** Improve website traffic and lead generation with targeted, AI-driven content.  
+
+**2. AI-Driven Social Media Automation**  
+- **Approach:** Use AI to automate and optimize social media campaigns tailored to the target audience.  
+- **Benefit:** Boost brand awareness and engagement with consistent, high-quality posts.  
+
+**3. AI-Powered Customer Support Chatbots**  
+- **Approach:** Deploy AI chatbots to handle FAQs, provide product recommendations, and support customer inquiries.  
+- **Benefit:** Improve response times, enhance customer satisfaction, and reduce operational costs.  
+
+---
+
+### **Expected Results and ROI**  
+Based on our success with **EcoSmart Solutions**, a similar company:  
+- Increased organic traffic by **65%** within six months.  
+- Boosted social media engagement by **40%**.  
+- Reduced customer response times from **6 hours to under 2 minutes**.  
+
+---
+
+### **Call to Action**  
+We’d love to discuss how these tailored solutions can help GreenFuture Tech achieve its goals. Let’s schedule a 30-minute call to explore opportunities and create a roadmap for success.  
+
+**Next Steps:**  
+- Reply to this email with your availability.  
+- Visit [ElevateAI Marketing Solutions](https://elevateAI.com) for more insights into our services.  
+
+We look forward to partnering with you to power GreenFuture Tech’s digital transformation!  
+
+---
+
+"""
+
+PROOF_READER_PROMPT = """
+# **Role:**  
+You are a **Professional Proofreader and Quality Analyst** specializing in ensuring the accuracy, structure, and completeness of professional documents. Your task is to analyze the outreach {final_report}, ensuring it meets the highest standards of professionalism, clarity, and effectiveness.  
+
+---
+
+# **Task:**  
+Your primary responsibilities are:  
+1. **Structural Analysis:** Verify that the report includes all required sections:  
+   - **Introduction**  
+   - **Business Analysis**  
+   - **Proposed AI Solutions**  
+   - **Expected Results and ROI**  
+   - **Call to Action**  
+
+2. **Content Completeness:** Ensure:  
+   - Each section addresses its intended purpose effectively.  
+   - All relevant links (e.g., company website, case studies, contact links) are included and functional.  
+   - Recommendations and examples are tailored to the specific lead’s context.  
+
+3. **Quality Enhancement: (If needed)**  
+   - Refine language to ensure clarity, conciseness, and professionalism.  
+   - Introduce minor enhancements, such as improved transitions or added examples, if necessary.  
+   - Add any missing or incorrect links while maintaining logical flow and accuracy.  
+
+--- 
+
+# **Notes:**  
+- Return the **revised final report** in markdown format, without any additional text or preamble. 
+- Your goal is to refine the existing report, not rewrite it. Keep changes minimal but impactful.   
+"""
+
 OUTREACH_PROMPT = """ "Within the vibrant ecosystem of Scalapay's sales department, "
         "you stand out as the bridge between potential clients "
         "and the solutions they need."
@@ -162,24 +326,40 @@ You are writing a cold outreach email to capture the lead’s interest and encou
 
 ---
 
-# **Email Template:**  
+# **Email Template to be produced as output, in HTML FORMAT:**  
 
-Hi [First Name],
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Email Template</title>
+</head>
+<body>
+    <p>Hi [First Name],</p>
 
-[Personalization]
+    <p>[Personalization]</p>
 
-At Scalapay, we specialize in helping businesses like yours streamline operations and accelerate digital and in-store growth using BNPL solutions. We’ve helped several businesses in the [{company}'s industry] unlock the potential of BNPL to improve efficiency and customer engagement.
+    <p>At Scalapay, we specialize in helping businesses like yours streamline operations and accelerate digital and in-store growth using BNPL solutions. We’ve helped several businesses in the [{company}'s industry] unlock the potential of BNPL to improve efficiency and customer engagement.</p>
 
-After reviewing {company}’s digital presence, we’ve crafted a detailed audit report with key findings and insights on how we can help enhance your online strategy.
+    <p>After reviewing {company}’s digital presence, we’ve crafted a detailed audit report with key findings and insights on how we can help enhance your online strategy.</p>
 
-Take a look [here](Link to Outreach Report)
+    <p>Take a look <a href="{report_url}" target="_blank">here</a>.</p>
 
-If you'd like to discuss how we can help you achieve more with BNPL solutions, just shoot me a reply.
+    <p>If you'd like to discuss how we can help you achieve more with BNPL solutions, just shoot me a reply.</p>
 
-Looking forward to your thoughts!
+    <p>Looking forward to your thoughts!</p>
 
-Best regards,
-Alessio Cuoci
+    <p>Best regards,<br></p>
+   
+    <div dir="ltr" style="color:rgb(34,34,34)"><div dir="ltr"><strong style="color:inherit;font-family:Arial;font-size:13px">Alessio Cuoci</strong><br style="color:rgb(0,0,0);font-family:Arial;font-size:13px"><span style="color:inherit;font-family:Arial;font-size:12px">Sales Lead Manager - Italy<br><br></span></div></div>
+    <a href="https://www.scalapay.com/it" style="color:rgb(17,85,204)" target="_blank"><img src="https://ci3.googleusercontent.com/mail-sig/AIorK4z9F4X00Pn4uQQTXgklk8wm_GmpFWvCsKb76B5mcglUFm7XyhcHOJTiGHiUZf8Lr9BPMOaogNc" width="126" height="39" style="margin-right:0px"></a>
+    <a href="https://www.instagram.com/scalapay/" style="color:rgb(17,85,204)" target="_blank"><img src="https://ci3.googleusercontent.com/mail-sig/AIorK4yztdYehq5s0c6rXwuCDEtlqDwu-UDdzLXUgBoWsm5jBhpIDvy3GqGSuecUloLItfqK87nmeiw" width="37" height="37" style="margin-right:0px"></a>
+    <a href="https://www.facebook.com/scalapay/" style="color:rgb(17,85,204)" target="_blank"><img src="https://ci3.googleusercontent.com/mail-sig/AIorK4xJgVvbPDZO4pbcmckDR8MYbNFfvgdivQcW4kw-Cbt1ut3yBsPYDUOZjaq_5f0T0V61HEpyw0A" width="37" height="37" style="margin-right:0px"></a>
+    <a href="https://www.linkedin.com/company/scalapay/" style="color:rgb(17,85,204)" target="_blank"><img src="https://ci3.googleusercontent.com/mail-sig/AIorK4ztmGr0j7Y7uvLDul4kS0eLIbrm5vKlZ5H_pAVbyIBXz2zXV3GamaVwS7E11eOUjK2YYX04DUQ" width="38" height="38" style="margin-right:0px"></a>
+    <div dir="ltr" style="color:rgb(34,34,34)"><div dir="ltr"><font size="1" color="#999999" style="font-family:Arial">Scalapay S.r.l. - Via Nervesa 21, 20139, Milano, Italy<br></font><p style="font-size:8px;font-family:arial;color:rgb(135,138,135);width:inherit"><span style="font-family:arial,sans-serif;font-size:9px;color:rgb(126,140,141)">The information contained in this message and any attachments thereto are intended for professional purposes and are reserved for the exclusive use of the recipient. Any use, copying, retransmission or disclosure of such information by anyone other than the recipient is prohibited. The information contained in this message may be accessible, when necessary, to third authorized parties belonging to the Company and for this reason,&nbsp;it&nbsp;is requested not to send messages of a personal nature to this e-mail address.</span></p><div><span style="color:rgb(126,140,141);font-family:arial,sans-serif;font-size:9px">Anyone who receives this message in error is asked to cancel&nbsp;it&nbsp;immediately.</span></div></div></div>
+
+</body>
+</html>
 
 ---
 

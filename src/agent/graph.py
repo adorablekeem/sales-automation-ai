@@ -5,9 +5,9 @@ import asyncio
 from typing import cast, Any, Literal
 import json
 
-from tools.tools import get_transcript
-from tools.tools import extract_youtube_id
-from tools.tools import get_youtube_interview_urls
+from tools.my_tools import get_transcript
+from tools.my_tools import extract_youtube_id
+from tools.my_tools import get_youtube_interview_urls
 from tools.proxycurl.linkedin import scrape_linkedin_profile
 from linkedin_lookup_agent import lookup as linkedin_lookup_agent
 from langchain_openai import ChatOpenAI
@@ -18,9 +18,16 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.graph import START, END, StateGraph
 from pydantic import BaseModel, Field
 
+from agent.utils import get_report, save_reports_locally
+from tools.google_docs_tools import GoogleDocsManager
+from tools.gmail_tools import GmailTools
+from tools.structured_outputs import EmailResponse
+from langsmith import traceable
+
 from agent.configuration import Configuration
 from agent.state import InputState, OutputState, OverallState
 from agent.utils import deduplicate_and_format_sources, format_all_notes
+from datetime import datetime
 from agent.prompts import (
     EXTRACTION_PROMPT,
     REFLECTION_PROMPT,
@@ -30,10 +37,22 @@ from agent.prompts import (
     QUERY_WRITER_PROMPT,
     FINAL_PROMPT,
     COMPANY_QUERY_WRITER_PROMPT,
-    OUTREACH_PROMPT
+    OUTREACH_PROMPT,
+    GENERATE_OUTREACH_REPORT_PROMPT,
+    PROOF_READER_PROMPT
 )
 
-# LLMs
+
+SEND_EMAIL_DIRECTLY = True
+
+import logging  # ✅ Correct import
+
+# Set up logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 class ResearchGraphState(TypedDict):
     linkedin_content: str # LinkedIn search results
@@ -42,6 +61,13 @@ class ResearchGraphState(TypedDict):
     reports: list # Reports
     company_reports: list # Reports
     outreach_email: str
+    reports_folder_link: str
+    custom_outreach_report_link: str
+
+    def __init__(self, loader):
+        self.lead_loader = loader
+        self.docs_manager = GoogleDocsManager()
+        self.drive_folder_name = ""
 
     async def generate_queries(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
         """Generate search queries based on the user input and extraction schema."""
@@ -113,6 +139,7 @@ class ResearchGraphState(TypedDict):
         query_instructions = COMPANY_QUERY_WRITER_PROMPT.format(
             person=person_str,
             company=state.person['company'],
+            current_year = datetime.now().year,
             info=json.dumps(state.extraction_schema, indent=2),
             user_notes=state.user_notes,
             max_search_queries=max_search_queries,
@@ -160,7 +187,7 @@ class ResearchGraphState(TypedDict):
             search_tasks.append(
                 tavily_async_client.search(
                     query,
-                    search_depth="advanced",
+                    search_depth="basic",
                     max_results=max_search_results,
                     include_raw_content=True,
                     topic="general",
@@ -205,7 +232,7 @@ class ResearchGraphState(TypedDict):
             search_tasks.append(
                 tavily_async_client.search(
                     query,
-                    search_depth="advanced",
+                    search_depth="basic",
                     max_results=max_search_results,
                     include_raw_content=True,
                     topic="general",
@@ -230,7 +257,7 @@ class ResearchGraphState(TypedDict):
             company=state.person['company'],
             user_notes=state.user_notes,
         )
-        result = await openai4o.ainvoke(p)
+        result = await openai4o_long_content.ainvoke(p)
     
         # TO-DO: Generate multiple reports for different sources
         return {"company_reports": [result.content]}
@@ -253,7 +280,7 @@ class ResearchGraphState(TypedDict):
             search_tasks.append(
                 tavily_async_client.search(
                     query,
-                    search_depth="advanced",
+                    search_depth="basic",
                     max_results=max_search_results,
                     include_raw_content=True,
                     topic="news",
@@ -362,6 +389,91 @@ class ResearchGraphState(TypedDict):
 
         # Access the content of the response
         return {"final_report": final_report.content}
+
+    @traceable
+    async def generate_custom_outreach_report(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
+        logger.info("Starting LangGraph execution tracing...")
+
+        # Initialize GoogleDocsManager here
+        docs_manager = GoogleDocsManager()
+
+        # Load reports
+        company_report = state.company_reports
+        
+        # TODO Create better description to fetch accurate similar case study using RAG
+        # get relevant case study
+        # case_study_report = fetch_similar_case_study(general_lead_search_report)
+        
+        inputs = f"""
+        **Research Report:**
+
+        {company_report}
+
+        ---
+
+        **Case Study:**
+        """
+
+        # {case_study_report}
+        
+        a = GENERATE_OUTREACH_REPORT_PROMPT.format(
+            company_report=company_report
+            #, case_study_report=case_study_report
+        )
+        
+        final_outreach_report = await openai4o_long_content.ainvoke(a)
+        final_outreach_report = final_outreach_report.content
+
+        # TODO Find better way to include correct links into the final report
+        # Proof read generated report
+        inputs = f"""
+        {final_outreach_report}
+
+        ---
+
+        **Correct Links:**
+
+        ** Our website link**: https://elevateAI.com
+        ** Case study link**: https://elevateAI.com/case-studies/A
+        """
+        
+        # Call our editor/proof-reader agent
+        b = PROOF_READER_PROMPT.format(
+            final_report=final_outreach_report
+        )
+
+        revised_outreach_report = await openai4o_long_content.ainvoke(b)
+        revised_outreach_report = revised_outreach_report.content
+
+        # Make sure revised_outreach_report.content is accessed if it's a response object
+        report_content = revised_outreach_report.content if hasattr(revised_outreach_report, 'content') else revised_outreach_report
+        
+        # Create a folder name based on relevant info
+        folder_name = f"Outreach Reports {datetime.now().strftime('%Y-%m-%d')}"
+        
+        try:
+            # Store report into google docs and get shareable link
+            new_doc = await docs_manager.add_document(
+                content=report_content,
+                doc_title=f"Business Report - {state.person['company']}",
+                folder_name=folder_name,
+                make_shareable=True,
+                folder_shareable=True,
+                markdown=True,
+            )
+            
+
+            logger.info(f"Successfully created Google Doc with URL: {new_doc['folder_url']}")
+            logger.info(f"Successfully created Google Sheet with URL: {new_doc['shareable_url']}")
+            
+            return {
+                "custom_outreach_report_link": new_doc["shareable_url"],
+                "reports_folder_link": new_doc["folder_url"]
+            }
+        except Exception as e:
+            logger.error(f"Failed to create Google Doc: {str(e)}")
+            raise
+    
     
     async def outreach_email(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
         """Node to write a section."""
@@ -386,14 +498,40 @@ class ResearchGraphState(TypedDict):
             company=state.person['company'],
             info=json.dumps(state.extraction_schema, indent=2),
             company_reports=company_reports, 
-            final_report=final_report
+            final_report=final_report,
+            report_url=state.custom_outreach_report_link
         )
 
+        structured_llm = openai4o.with_structured_output(EmailResponse)
         # Invoke the model
-        outreach_email_result = await openai4o.ainvoke(l)
+        outreach_email_result = await structured_llm.ainvoke(l)
 
+        # Get relevant fields
+        subject = outreach_email_result.subject
+        personalized_email = outreach_email_result.email
+        
+        # Get lead email
+        email = 'keem.adorable@scalapay.com'
+        
+        # Create draft email
+        gmail = GmailTools()
+        gmail.create_draft_email(
+            recipient=email,
+            subject=subject,
+            html_email_content=personalized_email
+        )
+        
+        # Send email directly
+        if SEND_EMAIL_DIRECTLY:
+            gmail.send_email(
+                recipient=email,
+                subject=subject,
+                html_email_content=personalized_email
+            )
+
+        
         # Access the content of the response
-        return {"outreach_email_result": outreach_email_result.content}
+        return {"outreach_email_result": outreach_email_result.email}
 
 
 
@@ -446,8 +584,14 @@ rate_limiter = InMemoryRateLimiter(
     check_every_n_seconds=0.1,
     max_bucket_size=10,  # Controls the maximum burst size.
 )
-openai4o = ChatOpenAI(model="gpt-4o",
+openai4o = ChatOpenAI(model="gpt-4o-mini",
     temperature=0,
+    max_tokens=None,
+    timeout=None,
+    max_retries=2,)
+
+openai4o_long_content = ChatOpenAI(model="o1-mini",
+    temperature=1,
     max_tokens=None,
     timeout=None,
     max_retries=2,)
@@ -483,19 +627,19 @@ builder.add_node("linkedin_search", ResearchGraphState.linkedin_search)
 builder.add_node("finalize_report", ResearchGraphState.finalize_report)
 builder.add_node("youtube_interviews", ResearchGraphState.youtube_interviews)
 builder.add_node("research_company", ResearchGraphState.research_company)
-builder.add_node("research_company_news", ResearchGraphState.research_company_news)
+builder.add_node("generate_custom_outreach_report", ResearchGraphState.generate_custom_outreach_report)
 builder.add_node("outreach_email", ResearchGraphState.outreach_email)
 
 builder.add_edge(START, "collect_person_info")
-builder.add_edge(START, "company_generate_queries")
 builder.add_edge("collect_person_info", "generate_queries")
 builder.add_edge("collect_person_info", "linkedin_search")
 builder.add_edge("collect_person_info", "youtube_interviews")
 builder.add_edge("generate_queries", "research_person")
-builder.add_edge("company_generate_queries", "research_company")
-builder.add_edge("company_generate_queries", "research_company_news")
 builder.add_edge(["research_person", "linkedin_search", "youtube_interviews"], "finalize_report")
-builder.add_edge(["finalize_report", "research_company"], "outreach_email")
+builder.add_edge(START, "company_generate_queries")
+builder.add_edge("company_generate_queries", "research_company")
+builder.add_edge(["finalize_report", "research_company"], "generate_custom_outreach_report")
+builder.add_edge("generate_custom_outreach_report", "outreach_email")
 builder.add_edge("outreach_email", END)
 
 # Compile

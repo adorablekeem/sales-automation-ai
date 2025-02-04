@@ -1,4 +1,27 @@
 import requests
+import os
+import json
+
+from datetime import datetime
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.output_parsers import StrOutputParser
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google.oauth2 import service_account
+
+# Set the scopes for Google API
+SCOPES = [
+    # For using GMAIL API
+    "https://www.googleapis.com/auth/gmail.compose",
+    "https://www.googleapis.com/auth/gmail.modify",
+    "https://www.googleapis.com/auth/gmail.send",
+    # For using Google sheets as CRM, can comment if using Airtable or other CRM
+    'https://www.googleapis.com/auth/spreadsheets',
+    # For saving files into Google Docs
+    "https://www.googleapis.com/auth/documents",
+    "https://www.googleapis.com/auth/drive"
+]
 
 def deduplicate_and_format_sources(
     search_response, max_tokens_per_source, include_raw_content=True
@@ -80,3 +103,59 @@ def get_report(reports, report_name: str):
         if report.title == report_name:
             return report.content
     return ""
+
+def save_reports_locally(reports):
+    # Define the local folder path
+    reports_folder = "reports"
+    
+    # Create folder if it does not exist
+    if not os.path.exists(reports_folder):
+        os.makedirs(reports_folder)
+    
+    # Save each report as a file in the folder
+    for report in reports:
+        file_path = os.path.join(reports_folder, f"{report.title}.txt")
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(report.content)
+
+# This is for google service account
+"""
+def get_google_credentials():
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Construct the full path to the JSON file
+    json_file_path = os.path.join(script_dir, 'client_secret.json')
+    
+    # Load the service account info
+    with open(json_file_path) as json_file:
+        service_account_info = json.load(json_file)
+
+    # Create credentials object with scopes
+    creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=SCOPES)
+
+    # Refresh the credentials to get an access token
+    creds.refresh(Request())
+
+    
+
+    return creds
+"""
+
+def get_google_credentials():
+    creds = None
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    json_file_path = os.path.join(script_dir, 'client_secret.json')
+
+    script_dir_token = os.path.dirname(os.path.abspath(__file__))
+    token_file_path = os.path.join(script_dir_token, 'token.json')
+
+    if os.path.exists(token_file_path):
+        creds = Credentials.from_authorized_user_file(token_file_path, SCOPES)
+    
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+    return creds

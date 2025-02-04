@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Optional, Annotated
 import operator
-
+from typing_extensions import TypedDict
 from pydantic import BaseModel
 
 
@@ -43,7 +43,7 @@ class Person(BaseModel):
     """The current company of the person."""
     linkedin: Optional[str] = None
     """The Linkedin URL of the person."""
-    email: str
+    email: Optional[str] = None
     """The email of the person."""
     role: Optional[str] = None
     """The current title of the person."""
@@ -97,6 +97,8 @@ class OverallState:
     based on the user's query and the graph's execution.
     This is the primary output of the enrichment process.
     """
+
+    custom_outreach_report_link: str = field(default=None)
 
     is_satisfactory: bool = field(default=None)
     "True if all required fields are well populated, False otherwise"

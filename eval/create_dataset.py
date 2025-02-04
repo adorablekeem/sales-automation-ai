@@ -1,3 +1,11 @@
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # This loads variables from .env into the environment
+
+# Access your variables
+api_key = os.getenv('LANGSMITH_API_KEY')
+
 EXAMPLES = [
     {
         "name": "Harrison Chase",
