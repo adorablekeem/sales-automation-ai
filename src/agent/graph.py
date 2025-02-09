@@ -5,6 +5,7 @@ import asyncio
 from typing import cast, Any, Literal
 import json
 
+from tools.rag_tool import fetch_similar_case_study
 from tools.my_tools import get_transcript
 from tools.my_tools import extract_youtube_id
 from tools.my_tools import get_youtube_interview_urls
@@ -69,6 +70,53 @@ class ResearchGraphState(TypedDict):
         self.docs_manager = GoogleDocsManager()
         self.drive_folder_name = ""
 
+    async def generate_queries(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
+        """Generate search queries based on the user input and extraction schema."""
+        # Get configuration
+        configurable = Configuration.from_runnable_config(config)
+        max_search_queries = configurable.max_search_queries
+
+        # Generate search queries
+        structured_llm = openai4o.with_structured_output(Queries)
+
+        # Format system instructions
+        person_str = f"Email: {state.person['email']}"
+        if "name" in state.person:
+            person_str += f" Name: {state.person['name']}"
+        if "linkedin" in state.person:
+            person_str += f" LinkedIn URL: {state.person['linkedin']}"
+        if "role" in state.person:
+            person_str += f" Role: {state.person['role']}"
+        if "company" in state.person:
+            person_str += f" Company: {state.person['company']}"
+
+        query_instructions = QUERY_WRITER_PROMPT.format(
+            person=person_str,
+            info=json.dumps(state.extraction_schema, indent=2),
+            user_notes=state.user_notes,
+            max_search_queries=max_search_queries,
+        )
+
+        print(query_instructions)
+        
+        # Generate queries
+        results = cast(
+            Queries,
+            structured_llm.invoke(
+                [
+                    {"role": "system", "content": query_instructions},
+                    {
+                        "role": "user",
+                        "content": query_instructions,
+                    },
+                ]
+            ),
+        )
+
+        # Queries
+        query_list = [query for query in results.queries]
+        return {"search_queries": query_list}
+    
     async def generate_queries(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
         """Generate search queries based on the user input and extraction schema."""
         # Get configuration
@@ -212,6 +260,9 @@ class ResearchGraphState(TypedDict):
             user_notes=state.user_notes,
         )
         result = await openai4o.ainvoke(p)
+
+        state.reports = []
+
         return {"reports": [result.content]}
     
     async def research_company(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
@@ -244,23 +295,21 @@ class ResearchGraphState(TypedDict):
 
         # Deduplicate and format sources
         source_str = deduplicate_and_format_sources(
-            search_docs, max_tokens_per_source=1000, include_raw_content=True
+            search_docs, max_tokens_per_source=1300, include_raw_content=True
         )
 
-        print(source_str)
-        
         # Generate structured notes relevant to the extraction schema
         p = COMPANY_INFO_PROMPT.format(
             info=json.dumps(state.extraction_schema, indent=2),
             content=source_str,
             people=state.person,
             company=state.person['company'],
+            current_year = datetime.now().year,
             user_notes=state.user_notes,
         )
         result = await openai4o_long_content.ainvoke(p)
-    
         # TO-DO: Generate multiple reports for different sources
-        return {"company_reports": [result.content]}
+        return {"company_reports": result.content}
     
     async def research_company_news(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
         """Execute a multi-step web search and information extraction process.
@@ -327,7 +376,7 @@ class ResearchGraphState(TypedDict):
         ]
         # Extract LinkedIn content
         linkedin_content = await openai4o.ainvoke(messages)
-
+        state.reports = []
     
         return {"reports": [linkedin_content]}
     
@@ -361,6 +410,7 @@ class ResearchGraphState(TypedDict):
             content=source_str,
         )
         interviews = await openai4o.ainvoke(p)
+
         return {"reports": [interviews.content]}
 
     async def finalize_report(state: OverallState, config: RunnableConfig) -> dict[str, Any]:
@@ -402,26 +452,22 @@ class ResearchGraphState(TypedDict):
         
         # TODO Create better description to fetch accurate similar case study using RAG
         # get relevant case study
-        # case_study_report = fetch_similar_case_study(general_lead_search_report)
-        
-        inputs = f"""
-        **Research Report:**
-
-        {company_report}
-
-        ---
-
-        **Case Study:**
-        """
-
-        # {case_study_report}
+        case_study_report = fetch_similar_case_study(company_report)
+    
         
         a = GENERATE_OUTREACH_REPORT_PROMPT.format(
-            company_report=company_report
-            #, case_study_report=case_study_report
+            company_report=company_report,
+            case_study_report=case_study_report,
+            company=state.person["company"]
         )
         
-        final_outreach_report = await openai4o_long_content.ainvoke(a)
+        openai4o = ChatOpenAI(model="gpt-4o-mini",
+        temperature=0,
+        max_tokens=None,
+        timeout=None,
+        max_retries=2,)
+
+        final_outreach_report = await openai4o.ainvoke(a)
         final_outreach_report = final_outreach_report.content
 
         # TODO Find better way to include correct links into the final report
@@ -502,6 +548,12 @@ class ResearchGraphState(TypedDict):
             report_url=state.custom_outreach_report_link
         )
 
+        openai4o = ChatOpenAI(model="gpt-4o-mini",
+        temperature=0,
+        max_tokens=None,
+        timeout=None,
+        max_retries=2,)
+
         structured_llm = openai4o.with_structured_output(EmailResponse)
         # Invoke the model
         outreach_email_result = await structured_llm.ainvoke(l)
@@ -574,7 +626,7 @@ class OutputState(BaseModel):
 builder = StateGraph(
     OverallState,
     input=InputState,
-    output=OutputState,
+    output=OverallState,
     config_schema=Configuration,
 )
 
@@ -584,7 +636,7 @@ rate_limiter = InMemoryRateLimiter(
     check_every_n_seconds=0.1,
     max_bucket_size=10,  # Controls the maximum burst size.
 )
-openai4o = ChatOpenAI(model="gpt-4o-mini",
+openai4o = ChatOpenAI(model="gpt-3.5-turbo-0125",
     temperature=0,
     max_tokens=None,
     timeout=None,

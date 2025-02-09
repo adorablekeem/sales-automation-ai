@@ -89,7 +89,7 @@ class OverallState:
     
     reports: Annotated[list, operator.add]
     final_report: str = field(default=None)
-    company_reports: Annotated[list, operator.add]
+    company_reports: str = field(default=None)
 
     info: dict[str, Any] = field(default=None)
     """

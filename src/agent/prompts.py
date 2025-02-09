@@ -80,7 +80,7 @@ COMPANY_INFO_PROMPT = """You are doing web research on a company, {company}.
 # **Role:**
 
 You are a Professional Business Analyst tasked with crafting a comprehensive report based on financial information of the company and the content of its website. 
-Your goal is to provide an in-depth overview of the company's financial information, along with company's profile, and MOST IMPORTANTLY identify key business insights that might inform future Goals, Opportunities and Painpoints
+Your goal is to provide an in-depth overview of the company's financial information relevant to the year {current_year}, along with company's profile, and MOST IMPORTANTLY identify key business insights that might inform future Goals, Opportunities and Painpoints
 
 ---
 
@@ -102,8 +102,8 @@ You have just scraped website content.
 
 """
 
-YT_PROMPT = """You are doing reports on youtube video transcripts.
-    Do a profile report on the youtube video transcript of the person {person}, based on the trascripts {content}.
+YT_PROMPT = """You are doing a report on {person} personal life, projects, and passions based on transcripts extracted from youtube videos. These expected output is a report about what {person} cares about the most. Noticeable work and projects {person} is working on that we can find inspiring and we can praise her about.
+These are the trascripts of the video/s {content}.
 """
 
 FINAL_PROMPT = """You are an expert analyst tasked with writing a comprehensive digital dossier of {person} based on the gathered information.
@@ -112,14 +112,14 @@ FINAL_PROMPT = """You are an expert analyst tasked with writing a comprehensive 
 
 GENERATE_OUTREACH_REPORT_PROMPT = """
 # **Role:**  
-You are a **Professional Marketing Analyst** specializing in AI-driven content strategies, customer engagement, and operational optimization. Your task is to write a comprehensive, personalized outreach report that we will send to the lead's company demonstrating what challenges we identified in their marketing strategy and how our AI-powered solutions can help them address it and drive measurable improvements.  
+You are a **Professional Marketing Analyst** specializing in BNPL-driven content strategies, customer engagement, and operational optimization. Your task is to write a comprehensive, personalized outreach report that we will send to the lead's company demonstrating what challenges we identified in their marketing strategy and how our BNPL-powered solutions can help them address it and drive measurable improvements.  
 
 ---
 
 # **Task:**  
-Using the provided research {company_report} about the lead's company and the accompanying case study, generate a detailed outreach report that highlights:  
+Using the provided research company report and a competitor's case study about the lead's company and the accompanying case study, generate a detailed outreach report that highlights:  
 1. The lead's company challenges and opportunities.  
-2. How our AI-driven solutions can help them solve their challenges.  
+2. How our BNPL-driven solutions can help them solve their challenges.  
 3. Showcase the tangible results that we achieved with similar businesses through our solutions.  
 
 ---
@@ -127,7 +127,7 @@ Using the provided research {company_report} about the lead's company and the ac
 # **Context:**  
 You have access to:  
 1. A **detailed research report** about the lead’s company, including their services, challenges, and digital presence.  
-2. A **relevant case study** showcasing the success of our AI-driven solutions in similar contexts.  
+2. A **relevant case study** showcasing the success of our BNPL-driven solutions in similar contexts.  
 
 ## **About Us:**  
 
@@ -157,10 +157,21 @@ Your report should include the following five sections:
 
 **2. Business Analysis:**  
 - **Company Overview:** Summarize the lead’s business, industry, and key offerings.  
-- **Challenges Identified:** Highlight their key challenges based on the research report.  
-- **Potential for Improvement:** Identify areas where AI-driven solutions can drive measurable results.  
+- **Challenges Identified:** Considering the information gathered in {company_report}, Highlight their key challenges. Use dates and KPIs when possible (for example,  "6.4% decrease in service revenue in Q3 FY25").  
+- **Potential for Improvement:** Identify areas where BNPL-driven solutions can drive measurable results.  
 
-**3. Relevant BNPL Solutions:**  
+**3. Competitive Benchmarking & Case Study Analysis**
+Using the most relevant case study {case_study_report}, showcase how a similar company in the same industry benefited from partnering with Scalapay. This section should include:
+
+- Competitor Landscape: Briefly compare {company} with its key competitors in terms of payment flexibility, customer experience, and conversion strategies.
+- Success Story: Present the given case study of the business similar to {company} that implemented Scalapay's BNPL solution. Include:
+- The initial challenges that company faced.
+- How Scalapay’s solutions were integrated into their business model.
+- The measurable results achieved, such as increased AOV (Average Order Value), conversion rates, or customer retention.
+- Key Takeaways: Draw insights on how {company} can replicate this success by adopting BNPL solutions.
+-USE ONLY INFORMATION TAKEN FROM THE GIVEN CASE STUDY. DO NOT MAKE THINGS UP.
+
+**4. Relevant BNPL Solutions:**  
 - **PAY IN 3 INSTALLMENTS:** Maximize conversion with payment in 3 installments.
   - You receive the full amount immediately.
   - The customer pays in 3 interest-free installments.
@@ -176,79 +187,116 @@ Your report should include the following five sections:
   - The customer pays in 3 or 4 installments.
   - Encourages frequent and larger purchases.
 
-**4. Expected Results:**  
+
+**5. Expected Results for {company}:**  
 - **48% Increase in average cart size**  
 - **11% Increase in conversions**  
+- [only if you have information that can support it, continue the list with relevant expected results that solve the business painpoints and challenges]
 
-**5. Call to Action:**  
+**6. Call to Action:**  
 - Suggest actionable next steps, such as scheduling a meeting to explore tailored BNPL solutions further.  
 
 ---
 
 # **Example Output:**
 
-# **Elevating GreenFuture Tech’s Digital Strategy with AI**  
----
+# **Max Mara BNPL-Powered Growth Strategy Report**
 
-## **Introduction**  
-At **ElevateAI Marketing Solutions**, we empower businesses to thrive in the digital age with AI-driven strategies tailored to their needs. From automating social media content and creating SEO-optimized blogs to boosting customer engagement with AI-powered agents, our solutions are designed to save time, maintain consistency, and deliver measurable results.  
+## **1. Introduction**
 
-Our personalized approach and cutting-edge technology have enabled us to help companies like yours transform their digital presence into streamlined, lead-generating powerhouses. With proven expertise in enhancing marketing strategies across industries, we’re excited about the opportunity to partner with **GreenFuture Tech** to achieve measurable growth.  
+At **Scalapay**, our mission is to redefine the shopping experience by providing seamless, interest-free installment payment solutions. By allowing customers to **pay in 3 or 4 installments**, we empower businesses to boost conversion rates, increase average order values, and strengthen customer retention. 
 
----
+For **Max Mara**, a luxury fashion brand with a strong global presence and ambitious digital expansion goals, Scalapay presents an opportunity to optimize customer engagement and accelerate growth in both e-commerce and in-store segments.
 
-## **Business Analysis**  
-
-### **Company Overview:**  
-GreenFuture Tech is a sustainable technology company specializing in renewable energy solutions, such as solar panel systems, energy storage devices, and smart home integrations. With a mission to reduce carbon footprints and promote sustainable living, GreenFuture Tech has positioned itself as a pioneer in the renewable energy industry.  
-
-### **Challenges Identified:**  
-- **Limited Digital Presence:** GreenFuture Tech's website has strong branding but lacks consistent blog updates and SEO-optimized content to attract organic traffic.  
-- **Low Social Media Engagement:** While active on social media, posts often lack targeted strategies, resulting in limited reach and engagement.  
-- **Customer Support Bottlenecks:** Increasing customer inquiries are straining support teams, leading to delayed responses.  
-
-### **Potential for Improvement:**  
-- Establishing GreenFuture Tech as an industry thought leader through consistent, high-quality content.  
-- Driving audience engagement with strategic, AI-powered social media automation.  
-- Enhancing customer satisfaction with AI chatbots for real-time support.  
+This report outlines key business challenges for Max Mara, how our **Buy Now, Pay Later (BNPL)** solutions can drive measurable improvements, and a case study demonstrating successful implementation in the luxury fashion sector.
 
 ---
 
-### Proposed AI Solutions  
+## **2. Business Analysis**
 
-**1. AI-Powered Content Creation & SEO Optimization**  
-- **Approach:** Leverage AI to generate in-depth articles on renewable energy trends and implement SEO optimization to improve organic search visibility.  
-- **Benefit:** Improve website traffic and lead generation with targeted, AI-driven content.  
+### **Company Overview**
+**Max Mara Fashion Group** is a leading luxury fashion brand specializing in high-end women's apparel, accessories, and e-commerce retail. With a significant market presence in **Europe, North America, and digital channels**, Max Mara continues to grow through a blend of **heritage, quality, and sustainability**.
 
-**2. AI-Driven Social Media Automation**  
-- **Approach:** Use AI to automate and optimize social media campaigns tailored to the target audience.  
-- **Benefit:** Boost brand awareness and engagement with consistent, high-quality posts.  
+### **Challenges Identified**
+Based on the business report, Max Mara faces the following challenges:
+- **E-Commerce Growth Optimization** – While Max Mara’s online sales saw a **62% growth in revenue**, conversion rates (0.50%-1.00%) remain below industry benchmarks.
+- **Cart Abandonment & Affordability Concerns** – The high **Average Order Value (€875-€900)** may discourage potential customers from completing purchases.
+- **Competitive Pressure from Luxury and Fast Fashion Brands** – Rival brands are leveraging flexible payment solutions to attract price-sensitive luxury shoppers.
+- **Customer Retention & Repeat Purchase Rate** – Sustaining loyalty in a competitive luxury market requires added value beyond premium pricing and quality.
 
-**3. AI-Powered Customer Support Chatbots**  
-- **Approach:** Deploy AI chatbots to handle FAQs, provide product recommendations, and support customer inquiries.  
-- **Benefit:** Improve response times, enhance customer satisfaction, and reduce operational costs.  
-
----
-
-### **Expected Results and ROI**  
-Based on our success with **EcoSmart Solutions**, a similar company:  
-- Increased organic traffic by **65%** within six months.  
-- Boosted social media engagement by **40%**.  
-- Reduced customer response times from **6 hours to under 2 minutes**.  
+### **Potential for Improvement**
+- **Enhancing Checkout Conversion Rates** by offering installment payments to reduce financial hesitation.
+- **Increasing Average Order Value (AOV)** through BNPL flexibility, encouraging customers to purchase additional items.
+- **Strengthening Customer Retention** with seamless payment experiences that drive repeat business.
+- **Improving Digital Marketing Impact** by integrating BNPL-focused promotional strategies to attract new customers.
 
 ---
 
-### **Call to Action**  
-We’d love to discuss how these tailored solutions can help GreenFuture Tech achieve its goals. Let’s schedule a 30-minute call to explore opportunities and create a roadmap for success.  
+## **3. Competitive Benchmarking & Case Study Analysis**
 
-**Next Steps:**  
-- Reply to this email with your availability.  
-- Visit [ElevateAI Marketing Solutions](https://elevateAI.com) for more insights into our services.  
+### **Competitor Landscape**
+Competitors in the luxury fashion market, such as **Gucci, Prada, and high-end e-commerce platforms**, have increasingly adopted BNPL solutions to appeal to modern luxury consumers. Flexible payment options **enhance affordability without diluting brand exclusivity**.
 
-We look forward to partnering with you to power GreenFuture Tech’s digital transformation!  
+### **Case Study: FRMODA’s BNPL Success**
+
+**FRMODA**, an Italian luxury fashion e-commerce platform, integrated Scalapay’s **BNPL solution** to address similar challenges that Max Mara faces, including customer acquisition costs and cart abandonment. 
+
+#### **Key Results Achieved with Scalapay:**
+- **+20% Increase in Average Order Value** – Customers felt more comfortable purchasing high-ticket luxury items.
+- **+15% Growth in Items per Order** – Buyers were incentivized to add additional products due to installment flexibility.
+- **+25% Higher Repeat Purchase Rate** – BNPL led to greater customer loyalty and retention.
+- **+30% Increase in Orders from Co-Marketing Initiatives** – Joint promotional campaigns with Scalapay boosted conversions.
+
+#### **Key Takeaways for Max Mara:**
+- Implementing Scalapay’s BNPL solutions can drive a **similar 20% increase in AOV** by **making luxury purchases more accessible**.
+- Strategic **co-marketing campaigns** can boost e-commerce sales while increasing brand visibility.
+- BNPL integration can enhance **customer loyalty and repeat purchases**—a crucial factor in sustaining revenue growth.
 
 ---
 
+## **4. Relevant BNPL Solutions for Max Mara**
+
+### **PAY IN 3 INSTALLMENTS**  
+- Customers pay in **3 interest-free monthly installments**.
+- Max Mara receives the **full amount upfront**.
+- Encourages **frequent and high-value purchases**, reducing cart abandonment.
+
+### **PAY IN 4 INSTALLMENTS (Standard/Dynamic/Combined)**  
+- Customers can **split payments across 3 or 4 interest-free installments**.
+- Ideal for **high-value carts** to encourage larger purchases.
+- Enhances **checkout conversion rates** by making expensive items more accessible.
+
+### **PAY-BY-LINK**  
+- Enables **direct payment links** with BNPL options.
+- Enhances **conversion rates for personal shoppers and exclusive offers**.
+- Useful for **VIP clientele and limited-time campaigns**.
+
+---
+
+## **5. Expected Results for Max Mara**
+Based on FRMODA’s case study and industry benchmarks, Max Mara can anticipate:
+- **+20% Increase in Average Order Value (AOV)**
+- **+11% Boost in Checkout Conversion Rates**
+- **+15% Increase in Items per Order**
+- **+25% Higher Customer Retention Rate**
+- **+30% Surge in BNPL Transactions via Co-Marketing**
+
+These improvements align with Max Mara’s strategic goal of enhancing **e-commerce performance and global expansion**.
+
+---
+
+## **6. Call to Action**
+
+To explore how Scalapay can help **Max Mara unlock higher conversions, larger order values, and enhanced customer loyalty**, we invite your team to:
+
+📅 **Schedule a meeting with our BNPL specialists** to discuss tailored solutions.
+💡 **Explore co-marketing opportunities** to drive immediate growth.
+🚀 **Start integrating Scalapay today** and experience the benefits firsthand.
+
+We look forward to collaborating with Max Mara to elevate its **luxury shopping experience** and achieve **sustainable growth** in e-commerce and retail sales.
+
+**Contact us today to get started!**
+---
 """
 
 PROOF_READER_PROMPT = """
@@ -283,22 +331,14 @@ Your primary responsibilities are:
 - Your goal is to refine the existing report, not rewrite it. Keep changes minimal but impactful.   
 """
 
-OUTREACH_PROMPT = """ "Within the vibrant ecosystem of Scalapay's sales department, "
-        "you stand out as the bridge between potential clients "
-        "and the solutions they need."
-        "By creating engaging, personalized messages, "
-        "you not only inform leads about our offerings "
-        "but also make them feel seen and heard."
-        "Your role is pivotal in converting interest "
-        "into action, guiding leads through the journey "
-        "from curiosity to commitment."
+OUTREACH_PROMPT = """
 
 
 ---
 
 # **Role:**  
 
-You are an expert in B2B email personalization and outreach. Your task is to analyze the provided lead's LinkedIn and company details, and then craft an outreach personalized email to introduce them to our agency.
+You are an expert in B2B email personalization and outreach. Your task is to analyze the provided lead's information and details, and then craft an outreach personalized email to introduce them to our company.
 
 ---
 
@@ -310,20 +350,17 @@ You are writing a cold outreach email to capture the lead’s interest and encou
 
 # **Guidelines:**  
 - Review the lead’s profile and company information for relevant insights.
-- Focus on recent Lead's and company experiences, but reference older ones if relevant.     
+- Focus on recent Lead's experiences and projects, especially considering the content extracted from the youtube videos, but reference older ones if relevant.     
 - Write a short [Personalization] section of around 1-2 lines tailored to the lead's profile and its current company. 
 - Use a conversational, friendly and professional tone. 
+- The style of your writing should reflect a Sales Lead Manager email.
 
 ## **Example of personalizations:**
-
-- Your LinkedIn post about leveraging AI for personalized customer journeys was incredibly insightful. The way [Lead’s Company Name] has integrated these tools into your marketing campaigns sets a benchmark for the industry.  
-
-- I was impressed by your recent webinar on enhancing B2B lead nurturing strategies. The emphasis you placed on data-driven decision-making aligns perfectly with how we help marketing teams achieve better ROI through AI solutions.  
-
-- While reviewing [Lead’s Company Name]’s recent updates, I was impressed by the focus on optimizing multi-channel marketing strategies. The actionable insights your team is driving show a clear commitment to impactful results.  
-
-- I came across your LinkedIn profile and was impressed by your insights on optimizing sales funnels. Your recent campaign at [Lead’s Company Name] to improve lead conversion rates demonstrates a keen understanding of customer behavior and innovative strategies.   
-
+- "I recently came across a video where you talked about how Fastweb is engaging with Generation Z, and I loved your approach. The way you and your team collaborate with creators to truly understand and connect with this audience is really impressive. It’s clear that you’re not just following trends—you’re shaping them."
+- “I recently came across your work at Fastweb and was truly impressed by how you integrate brand marketing, eCommerce, and digital media to create a seamless customer experience. Your ability to blend strategy with innovation clearly shows in the way Fastweb engages with its audience.”
+- “I saw that you’ve been leading Fastweb’s digital transformation, from optimizing omnichannel strategies to driving impactful brand campaigns. It’s inspiring to see how you leverage data and creativity to stay ahead in such a competitive market.”
+- “Your work on enhancing Fastweb’s digital presence through advanced media strategies and customer engagement initiatives really stood out to me. It’s rare to see such a perfect balance of analytical precision and creative execution in brand marketing.”
+- “I came across your background and was fascinated by how your journey from social marketing to leading Fastweb’s brand and eCommerce strategy has shaped a customer-first approach. The way you drive innovation in digital marketing and optimize cross-channel communication is truly next level!”
 ---
 
 # **Email Template to be produced as output, in HTML FORMAT:**  
@@ -371,7 +408,7 @@ You are writing a cold outreach email to capture the lead’s interest and encou
 * **DON’T:** just praise the lead—focus on their experiences and background and on their company information.
 
 Use this information about the company: {company_reports} 
-and this information about the lead: {final_report}. Specifically, to write the [Personalization] section, use the information about {person} that will make him resonate more and that can make the email unique, very difficult for him to ignore.
+and this information about the lead: {final_report}.
     
 """
 
