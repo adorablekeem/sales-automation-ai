@@ -42,14 +42,22 @@ class CustomSerpAPIWrapper(SerpAPIWrapper):
             toret = "No good search result found"
         return toret
 
-def get_profile_url(name: str) -> str:
-    """Searches for an individual's LinkedIn profile URL using Tavily."""
+def get_profile_url(name: str) -> list:
+    """
+    Searches for an individual's LinkedIn profile URLs using Tavily.
+    
+    Args:
+        name (str): The name of the individual to search for.
+        
+    Returns:
+        list: A list containing up to three LinkedIn profile URLs. If no profiles are found, returns an empty list.
+    """
     query = f"{name} LinkedIn"
     response = tavily_client.search(query=query, max_results=3)
-    if response and response['results']:
-        return response['results'][0]['url']
+    if response and response.get('results'):
+        return [result['url'] for result in response['results'][:3]]
     else:
-        return "LinkedIn profile not found."
+        return []
     
 def get_youtube_interview_urls(name: str, max_results: int = 3) -> List[str]:
     """

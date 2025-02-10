@@ -40,7 +40,8 @@ from agent.prompts import (
     COMPANY_QUERY_WRITER_PROMPT,
     OUTREACH_PROMPT,
     GENERATE_OUTREACH_REPORT_PROMPT,
-    PROOF_READER_PROMPT
+    PROOF_READER_PROMPT,
+    STRATEGY_PROMPT
 )
 
 
@@ -489,7 +490,6 @@ class ResearchGraphState(TypedDict):
         )
 
         revised_outreach_report = await openai4o_long_content.ainvoke(b)
-        revised_outreach_report = revised_outreach_report.content
 
         # Make sure revised_outreach_report.content is accessed if it's a response object
         report_content = revised_outreach_report.content if hasattr(revised_outreach_report, 'content') else revised_outreach_report
@@ -513,6 +513,7 @@ class ResearchGraphState(TypedDict):
             logger.info(f"Successfully created Google Sheet with URL: {new_doc['shareable_url']}")
             
             return {
+                "revised_outreach_report": revised_outreach_report.content,
                 "custom_outreach_report_link": new_doc["shareable_url"],
                 "reports_folder_link": new_doc["folder_url"]
             }
@@ -538,21 +539,29 @@ class ResearchGraphState(TypedDict):
             raise ValueError("Reports are missing or not populated in the state.")
 
         # Write section using the gathered source docs from the interview
-
-        l = OUTREACH_PROMPT.format(
-            person=state.person,
-            company=state.person['company'],
-            info=json.dumps(state.extraction_schema, indent=2),
-            company_reports=company_reports, 
+        strategy = STRATEGY_PROMPT.format(
             final_report=final_report,
-            report_url=state.custom_outreach_report_link
+            company_report= state.revised_outreach_report
         )
 
         openai4o = ChatOpenAI(model="gpt-4o-mini",
         temperature=0,
         max_tokens=None,
         timeout=None,
-        max_retries=2,)
+        max_retries=2)
+
+        strategy_email = await openai4o.ainvoke(strategy)
+
+        l = OUTREACH_PROMPT.format(
+            person=state.person,
+            company=state.person['company'],
+            info=json.dumps(state.extraction_schema, indent=2),
+            company_report= state.revised_outreach_report,
+            final_report=final_report,
+            report_url=state.custom_outreach_report_link,
+            strategy_email = strategy_email
+        )
+
 
         structured_llm = openai4o.with_structured_output(EmailResponse)
         # Invoke the model

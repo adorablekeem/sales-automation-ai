@@ -114,6 +114,8 @@ GENERATE_OUTREACH_REPORT_PROMPT = """
 # **Role:**  
 You are a **Professional Marketing Analyst** specializing in BNPL-driven content strategies, customer engagement, and operational optimization. Your task is to write a comprehensive, personalized outreach report that we will send to the lead's company demonstrating what challenges we identified in their marketing strategy and how our BNPL-powered solutions can help them address it and drive measurable improvements.  
 
+NOTES:
+Your output should only be in text, simulating markdown format.
 ---
 
 # **Task:**  
@@ -289,14 +291,14 @@ These improvements align with Max Mara’s strategic goal of enhancing **e-comme
 
 To explore how Scalapay can help **Max Mara unlock higher conversions, larger order values, and enhanced customer loyalty**, we invite your team to:
 
-📅 **Schedule a meeting with our BNPL specialists** to discuss tailored solutions.
-💡 **Explore co-marketing opportunities** to drive immediate growth.
+📅 **[Schedule a meeting with our BNPL specialists](mailto:alessio.cuoci@scalapay.com)** to discuss tailored solutions.
 🚀 **Start integrating Scalapay today** and experience the benefits firsthand.
 
 We look forward to collaborating with Max Mara to elevate its **luxury shopping experience** and achieve **sustainable growth** in e-commerce and retail sales.
 
-**Contact us today to get started!**
+**[Contact us today to get started!](mailto:alessio.cuoci@scalapay.com)**
 ---
+
 """
 
 PROOF_READER_PROMPT = """
@@ -331,14 +333,14 @@ Your primary responsibilities are:
 - Your goal is to refine the existing report, not rewrite it. Keep changes minimal but impactful.   
 """
 
-OUTREACH_PROMPT = """
+STRATEGY_PROMPT = """
 
 
 ---
 
 # **Role:**  
 
-You are an expert in B2B email personalization and outreach. Your task is to analyze the provided lead's information and details, and then craft an outreach personalized email to introduce them to our company.
+Email Strategist Expert in Crafting Effective Email Campaigns.
 
 ---
 
@@ -349,51 +351,85 @@ You are writing a cold outreach email to capture the lead’s interest and encou
 ---
 
 # **Guidelines:**  
-- Review the lead’s profile and company information for relevant insights.
-- Focus on recent Lead's experiences and projects, especially considering the content extracted from the youtube videos, but reference older ones if relevant.     
-- Write a short [Personalization] section of around 1-2 lines tailored to the lead's profile and its current company. 
-- Use a conversational, friendly and professional tone. 
-- The style of your writing should reflect a Sales Lead Manager email.
+From this company outreach report {company_report} and the lead's report {final_report}
+make a short report in which you outline the strategy that should be tackled for building a cold outreach email. The report should outline what are the major information that are relevant to the lead.
 
-## **Example of personalizations:**
-- "I recently came across a video where you talked about how Fastweb is engaging with Generation Z, and I loved your approach. The way you and your team collaborate with creators to truly understand and connect with this audience is really impressive. It’s clear that you’re not just following trends—you’re shaping them."
-- “I recently came across your work at Fastweb and was truly impressed by how you integrate brand marketing, eCommerce, and digital media to create a seamless customer experience. Your ability to blend strategy with innovation clearly shows in the way Fastweb engages with its audience.”
-- “I saw that you’ve been leading Fastweb’s digital transformation, from optimizing omnichannel strategies to driving impactful brand campaigns. It’s inspiring to see how you leverage data and creativity to stay ahead in such a competitive market.”
-- “Your work on enhancing Fastweb’s digital presence through advanced media strategies and customer engagement initiatives really stood out to me. It’s rare to see such a perfect balance of analytical precision and creative execution in brand marketing.”
-- “I came across your background and was fascinated by how your journey from social marketing to leading Fastweb’s brand and eCommerce strategy has shaped a customer-first approach. The way you drive innovation in digital marketing and optimize cross-channel communication is truly next level!”
 ---
 
-# **Email Template to be produced as output, in HTML FORMAT:**  
+Penalties:
+Avoid generic or vague advice.
+    
+"""
+
+
+OUTREACH_PROMPT = """
+
+
+---
+
+# **Role:**  
+
+You are an expert in sales cold-outreach-emails. You have built your expertise from all the campaigns you have made and outreach email templates you have constructed over the years working at Hunter. Your task is to analyze the provided lead's information and company's report, and then craft an outreach personalized email.
+
+---
+
+# **Context**
+
+You are writing a cold outreach email to capture the lead’s interest and encourage them to schedule a call. You have been given a strategy report for building the email effectively {strategy_email}. The goal is to demonstrate how our BNPL solutions can address their specific challenges, align with their business goals, and drive measurable improvements.
+
+---
+
+# **Guidelines:**  
+- Review the strategy report and understand company's future initiatives and projects to solve painpoints.
+- Review the lead’s profile and company information for relevant insights.
+- Focus on writing concisely few lines that would engage the lead the most.
+- Write a short [Personalization] section of around 1-2 lines specific to the lead's work experience or insight you got from {final_report}.
+- You get penalized if the personalization is generic and boring.
+- In addition to the personalization, you should mention that you noticed several company's painpoints. You get penalized if the transition from personal line and challenges found does not feel smooth and natural.
+- The style of your writing should reflect a Sales Lead Manager email.
+- The email MUST be formatted in HTML. You get penalized if the email is not correctly in HTML format as below.
+
+---
+
+# ** HTML format:**  
 
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Email Template</title>
+  <meta charset="UTF-8">
+  <title>[title]</title>
 </head>
 <body>
-    <p>Hi [First Name],</p>
 
-    <p>[Personalization]</p>
+  <p>Hey [name],</p>
 
-    <p>At Scalapay, we specialize in helping businesses like yours streamline operations and accelerate digital and in-store growth using BNPL solutions. We’ve helped several businesses in the [{company}'s industry] unlock the potential of BNPL to improve efficiency and customer engagement.</p>
+  <p>
+    [personalization, and noticed company's painpoints]
+  </p>
 
-    <p>After reviewing {company}’s digital presence, we’ve crafted a detailed audit report with key findings and insights on how we can help enhance your online strategy.</p>
+  <p>
+    We put together a <strong>BNPL-Powered [what type of report] Report</strong> that outlines:
+      <li>[shorter version of challenges identified and potential for improvement, taken from the {company_report}, and metrics are written between "<strong></strong>"]</li>
+  </p>
 
-    <p>Take a look <a href="{report_url}" target="_blank">here</a>.</p>
+  <p>
+    Here’s the link to the full report in which you can find additional challenges we found: <br>
+    <a href="{report_url}">[title of the report]</a>
+  </p>
 
-    <p>If you'd like to discuss how we can help you achieve more with BNPL solutions, just shoot me a reply.</p>
+  <p>
+    Would love to hear what you think. If it resonates, let’s schedule a quick call with me to explore 
+    how these insights can complement your [specific {company}'s initiatives] at {company}.
+  </p>
 
-    <p>Looking forward to your thoughts!</p>
-
-    <p>Best regards,<br></p>
-   
+  <p>Best,
     <div dir="ltr" style="color:rgb(34,34,34)"><div dir="ltr"><strong style="color:inherit;font-family:Arial;font-size:13px">Alessio Cuoci</strong><br style="color:rgb(0,0,0);font-family:Arial;font-size:13px"><span style="color:inherit;font-family:Arial;font-size:12px">Sales Lead Manager - Italy<br><br></span></div></div>
     <a href="https://www.scalapay.com/it" style="color:rgb(17,85,204)" target="_blank"><img src="https://ci3.googleusercontent.com/mail-sig/AIorK4z9F4X00Pn4uQQTXgklk8wm_GmpFWvCsKb76B5mcglUFm7XyhcHOJTiGHiUZf8Lr9BPMOaogNc" width="126" height="39" style="margin-right:0px"></a>
     <a href="https://www.instagram.com/scalapay/" style="color:rgb(17,85,204)" target="_blank"><img src="https://ci3.googleusercontent.com/mail-sig/AIorK4yztdYehq5s0c6rXwuCDEtlqDwu-UDdzLXUgBoWsm5jBhpIDvy3GqGSuecUloLItfqK87nmeiw" width="37" height="37" style="margin-right:0px"></a>
     <a href="https://www.facebook.com/scalapay/" style="color:rgb(17,85,204)" target="_blank"><img src="https://ci3.googleusercontent.com/mail-sig/AIorK4xJgVvbPDZO4pbcmckDR8MYbNFfvgdivQcW4kw-Cbt1ut3yBsPYDUOZjaq_5f0T0V61HEpyw0A" width="37" height="37" style="margin-right:0px"></a>
     <a href="https://www.linkedin.com/company/scalapay/" style="color:rgb(17,85,204)" target="_blank"><img src="https://ci3.googleusercontent.com/mail-sig/AIorK4ztmGr0j7Y7uvLDul4kS0eLIbrm5vKlZ5H_pAVbyIBXz2zXV3GamaVwS7E11eOUjK2YYX04DUQ" width="38" height="38" style="margin-right:0px"></a>
     <div dir="ltr" style="color:rgb(34,34,34)"><div dir="ltr"><font size="1" color="#999999" style="font-family:Arial">Scalapay S.r.l. - Via Nervesa 21, 20139, Milano, Italy<br></font><p style="font-size:8px;font-family:arial;color:rgb(135,138,135);width:inherit"><span style="font-family:arial,sans-serif;font-size:9px;color:rgb(126,140,141)">The information contained in this message and any attachments thereto are intended for professional purposes and are reserved for the exclusive use of the recipient. Any use, copying, retransmission or disclosure of such information by anyone other than the recipient is prohibited. The information contained in this message may be accessible, when necessary, to third authorized parties belonging to the Company and for this reason,&nbsp;it&nbsp;is requested not to send messages of a personal nature to this e-mail address.</span></p><div><span style="color:rgb(126,140,141);font-family:arial,sans-serif;font-size:9px">Anyone who receives this message in error is asked to cancel&nbsp;it&nbsp;immediately.</span></div></div></div>
+  </p>
 
 </body>
 </html>
@@ -406,9 +442,12 @@ You are writing a cold outreach email to capture the lead’s interest and encou
 * Ensure the report link and all personalization details are accurate.  
 * **DON’T:** use generic statements or make assumptions without evidence.  
 * **DON’T:** just praise the lead—focus on their experiences and background and on their company information.
+* Conceptually, this is a type of output I would be personally satisfied about (I'm very satisfied with how it transitioned from the personalized line to the company's challenges smoothly) "
+  "subject": "Giovanna, this could jumpstart Max Mara’s eCommerce performance",
+  "email": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Giovanna, this could jumpstart Max Mara’s eCommerce performance</title>\n</head>\n<body>\n\n  <p>Hey Giovanna,</p>\n\n  <p>\n    I’ve followed your work optimizing digital growth at PUPA Milano and now at Max Mara Fashion Group—it’s clear you’re passionate about fast-paced, revolutionary changes in the eCommerce space. With your background leading high-profile replatforming efforts, I thought you’d appreciate a quick look at a BNPL approach tailored to elevate Max Mara’s cart conversion rates and AOV.\n  </p>\n\n  <p>\n    We put together a <strong>BNPL-Powered Growth Strategy Report</strong> that outlines:\n    <ul>\n      <li><strong>Real-life data</strong> showing how installment payments cut cart abandonment for high-ticket luxury items</li>\n      <li><strong>+20% AOV growth</strong> and <strong>+25% repeat purchase rate</strong> driven by strategic BNPL adoption</li>\n      <li><strong>Easy integration</strong> for frictionless customer experiences—especially crucial in a competitive luxury market</li>\n    </ul>\n  </p>\n\n  <p>\n    Here’s the link to the report: <br>\n    <a href=\"#\">Max Mara BNPL-Powered Growth Strategy Report</a>\n  </p>\n\n  <p>\n    Would love to hear what you think. If it resonates, let’s schedule a quick call with our Scalapay specialists to explore how these insights can complement your digital marketing initiatives at Marina Rinaldi.\n  </p>\n\n  <p>Best,<br>\n    <strong>Your Name</strong><br>\n    <span>Your Title / Company</span><br><br>\n  </p>\n\n  <a href=\"https://www.scalapay.com/\" target=\"_blank\">\n    <img src=\"https://ci3.googleusercontent.com/mail-sig/AIorK4z9F4X00Pn4uQQTXgklk8wm_GmpFWvCsKb76B5mcglUFm7XyhcHOJTiGHiUZf8Lr9BPMOaogNc\" width=\"126\" height=\"39\" style=\"margin-right:0px\" alt=\"Scalapay Logo\">\n  </a>\n  <a href=\"https://www.instagram.com/scalapay/\" target=\"_blank\">\n    <img src=\"https://ci3.googleusercontent.com/mail-sig/AIorK4yztdYehq5s0c6rXwuCDEtlqDwu-UDdzLXUgBoWsm5jBhpIDvy3GqGSuecUloLItfqK87nmeiw\" width=\"37\" height=\"37\" style=\"margin-right:0px\" alt=\"Instagram\">\n  </a>\n  <a href=\"https://www.facebook.com/scalapay/\" target=\"_blank\">\n    <img src=\"https://ci3.googleusercontent.com/mail-sig/AIorK4xJgVvbPDZO4pbcmckDR8MYbNFfvgdivQcW4kw-Cbt1ut3yBsPYDUOZjaq_5f0T0V61HEpyw0A\" width=\"37\" height=\"37\" style=\"margin-right:0px\" alt=\"Facebook\">\n  </a>\n  <a href=\"https://www.linkedin.com/company/scalapay/\" target=\"_blank\">\n    <img src=\"https://ci3.googleusercontent.com/mail-sig/AIorK4ztmGr0j7Y7uvLDul4kS0eLIbrm5vKlZ5H_pAVbyIBXz2zXV3GamaVwS7E11eOUjK2YYX04DUQ\" width=\"38\" height=\"38\" style=\"margin-right:0px\" alt=\"LinkedIn\">\n  </a>\n\n  <div style=\"color:#222222;font-family:Arial;font-size:12px;margin-top:10px;\">\n    Scalapay S.r.l. - Via Nervesa 21, 20139, Milano, Italy<br>\n    <p style=\"font-size:8px;color:#878A87;max-width:600px;\">\n      The information contained in this message and any attachments thereto are intended for professional purposes and are reserved for the exclusive use of the recipient. Any use, copying, retransmission or disclosure of such information by anyone other than the recipient is prohibited. The information contained in this message may be accessible, when necessary, to third authorized parties belonging to the Company and for this reason, it is requested not to send messages of a personal nature to this e-mail address.\n    </p>\n    <p style=\"font-size:8px;color:#878A87;max-width:600px;\">\n      Anyone who receives this message in error is asked to cancel it immediately.\n    </p>\n  </div>\n\n</body>\n</html>"
+" because it tackles the specific company's painpoint that the lead is interested in solving. The initial personalized line is natural and transitions to the company's challenges smoothly.
 
-Use this information about the company: {company_reports} 
-and this information about the lead: {final_report}.
+
     
 """
 

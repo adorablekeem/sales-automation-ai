@@ -97,7 +97,7 @@ class OverallState:
     based on the user's query and the graph's execution.
     This is the primary output of the enrichment process.
     """
-
+    revised_outreach_report: str = field(default=None)
     custom_outreach_report_link: str = field(default=None)
 
     is_satisfactory: bool = field(default=None)
