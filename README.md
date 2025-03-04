@@ -1,4 +1,4 @@
-# LangGraph Agent
+# SDR LangGraph Agent
 
 This repository contains a **LangGraph** workflow (or “agent”) designed to orchestrate a multi-step lead processing and outreach flow. The diagram below outlines how the agent nodes connect and process information.
 
