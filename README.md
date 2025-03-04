@@ -2,7 +2,8 @@
 
 This repository contains a **LangGraph** workflow (or “agent”) designed to orchestrate a multi-step lead processing and outreach flow. The diagram below outlines how the agent nodes connect and process information.
 
-![LangGraph Agent Flowchart](./sales-ai-graph.png)
+<img width="1263" alt="sales-ai-graph" src="https://github.com/user-attachments/assets/9b82d1ba-f320-47ed-a48f-b3a39db6e54f" />
+
 
 ## Overview
 
